@@ -55,9 +55,9 @@ CREATE TABLE v1.countries (
     country_name_english character varying,
     country_name_native character varying,
     country_e_164 smallint,
-    country_language character varying,
-    country_flag_url character varying,
-    country_is_independent boolean NOT NULL
+    country_language character(3),
+    country_flag_emoji character varying,
+    country_is_independent boolean DEFAULT true NOT NULL
 );
 
 
@@ -120,10 +120,10 @@ COMMENT ON COLUMN v1.countries.country_language IS 'Country''s official or de fa
 
 
 --
--- Name: COLUMN countries.country_flag_url; Type: COMMENT; Schema: v1; Owner: admin
+-- Name: COLUMN countries.country_flag_emoji; Type: COMMENT; Schema: v1; Owner: admin
 --
 
-COMMENT ON COLUMN v1.countries.country_flag_url IS 'URL to a SVG of the country''s flag';
+COMMENT ON COLUMN v1.countries.country_flag_emoji IS 'Country''s flag emoji.';
 
 
 --
@@ -138,6 +138,8 @@ COMMENT ON COLUMN v1.countries.country_is_independent IS 'Boolean for whether a 
 --
 
 CREATE TABLE v1.languages (
+    language_iso_639_3 character(3) NOT NULL,
+    language_name_english character varying NOT NULL
 );
 
 
@@ -148,6 +150,20 @@ ALTER TABLE v1.languages OWNER TO admin;
 --
 
 COMMENT ON TABLE v1.languages IS 'Languages as defined by ISO-639.';
+
+
+--
+-- Name: COLUMN languages.language_iso_639_3; Type: COMMENT; Schema: v1; Owner: admin
+--
+
+COMMENT ON COLUMN v1.languages.language_iso_639_3 IS 'ISO-639-3 for language; three letters';
+
+
+--
+-- Name: COLUMN languages.language_name_english; Type: COMMENT; Schema: v1; Owner: admin
+--
+
+COMMENT ON COLUMN v1.languages.language_name_english IS 'Language''s name in English';
 
 
 --
@@ -162,7 +178,7 @@ CREATE TABLE v1.users (
     user_pw character(97) NOT NULL,
     user_name character varying NOT NULL,
     user_phone character varying NOT NULL,
-    user_country character(2) NOT NULL,
+    user_country character(3) NOT NULL,
     user_verified boolean DEFAULT false NOT NULL,
     user_status boolean DEFAULT true NOT NULL,
     user_login_attempts_left smallint DEFAULT 5 NOT NULL,
@@ -180,6 +196,14 @@ ALTER TABLE v1.users OWNER TO admin;
 
 ALTER TABLE ONLY v1.countries
     ADD CONSTRAINT countries_pk PRIMARY KEY (country_iso_3166_1_alpha3);
+
+
+--
+-- Name: languages languages_pk; Type: CONSTRAINT; Schema: v1; Owner: admin
+--
+
+ALTER TABLE ONLY v1.languages
+    ADD CONSTRAINT languages_pk PRIMARY KEY (language_iso_639_3);
 
 
 --
@@ -293,6 +317,29 @@ CREATE INDEX idx_user_user_updated_at ON v1.users USING btree (user_updated_at D
 --
 
 CREATE INDEX idx_user_user_verified ON v1.users USING btree (user_verified);
+
+
+--
+-- Name: languages_language_name_english_idx; Type: INDEX; Schema: v1; Owner: admin
+--
+
+CREATE INDEX languages_language_name_english_idx ON v1.languages USING btree (language_name_english);
+
+
+--
+-- Name: countries countries_languages_fk; Type: FK CONSTRAINT; Schema: v1; Owner: admin
+--
+
+ALTER TABLE ONLY v1.countries
+    ADD CONSTRAINT countries_languages_fk FOREIGN KEY (country_language) REFERENCES v1.languages(language_iso_639_3);
+
+
+--
+-- Name: users users_countries_fk; Type: FK CONSTRAINT; Schema: v1; Owner: admin
+--
+
+ALTER TABLE ONLY v1.users
+    ADD CONSTRAINT users_countries_fk FOREIGN KEY (user_country) REFERENCES v1.countries(country_iso_3166_1_alpha3);
 
 
 --

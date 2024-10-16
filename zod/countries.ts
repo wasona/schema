@@ -9,8 +9,8 @@ export const Countries = z.object({
   country_name_native: z.string().nullable().optional(),
   country_e_164: z.int2().nullable().optional(),
   country_language: z.string().nullable().optional(),
-  country_flag_url: z.string().nullable().optional(),
-  country_is_independent: z.boolean(),
+  country_flag_emoji: z.string().nullable().optional(),
+  country_is_independent: z.boolean().optional(),
 });
 
 export type CountriesT = z.infer<typeof Countries>;
